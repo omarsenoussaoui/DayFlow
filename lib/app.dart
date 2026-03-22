@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'l10n/app_localizations.dart';
+import 'l10n/arabic_material_localizations.dart';
 import 'providers/locale_provider.dart';
 import 'screens/home_screen.dart';
 import 'utils/constants.dart';
@@ -24,8 +25,10 @@ class DayFlowApp extends StatelessWidget {
         Locale('en'),
         Locale('ar', 'EG'),
       ],
-      localizationsDelegates: const [
+      localizationsDelegates: [
         AppLocalizations.delegate,
+        // Custom Arabic delegate with Western numerals — must come before Global
+        ArabicWesternMaterialLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
