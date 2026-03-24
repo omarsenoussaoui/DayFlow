@@ -20,11 +20,21 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   DateTime _selectedDate = DateTime.now();
+  final _quickTaskController = TextEditingController();
+  int? _editingQuickTaskId;
+  final _editController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    _quickTaskController.dispose();
+    _editController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadData() async {
@@ -42,7 +52,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onDateSelected(DateTime date) {
-    setState(() => _selectedDate = date);
+    setState(() {
+      _selectedDate = date;
+      _editingQuickTaskId = null;
+    });
     final dateStr = DateHelpers.toDateString(date);
     context.read<DailyTaskProvider>().loadCompletionsForDate(dateStr);
     context.read<NotificationTaskProvider>().loadTasksForDate(dateStr);
@@ -61,87 +74,31 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _showAddQuickTaskSheet() {
-    final controller = TextEditingController();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final l10n = AppLocalizations.of(context);
+  void _addQuickTask() {
+    final title = _quickTaskController.text.trim();
+    if (title.isEmpty) return;
+    context.read<QuickTaskProvider>().addTask(
+          title,
+          DateHelpers.toDateString(_selectedDate),
+        );
+    _quickTaskController.clear();
+  }
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: isDark ? AppColors.darkSurface : AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.fromLTRB(
-          24, 20, 24, MediaQuery.of(ctx).viewInsets.bottom + 24,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.addQuickTask,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: isDark
-                    ? AppColors.darkTextPrimary
-                    : AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: controller,
-              autofocus: true,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: InputDecoration(
-                hintText: l10n.taskName,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
-              ),
-              onSubmitted: (value) {
-                if (value.trim().isNotEmpty) {
-                  context.read<QuickTaskProvider>().addTask(
-                        value.trim(),
-                        DateHelpers.toDateString(_selectedDate),
-                      );
-                  Navigator.pop(ctx);
-                }
-              },
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: () {
-                  if (controller.text.trim().isNotEmpty) {
-                    context.read<QuickTaskProvider>().addTask(
-                          controller.text.trim(),
-                          DateHelpers.toDateString(_selectedDate),
-                        );
-                    Navigator.pop(ctx);
-                  }
-                },
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: Text(l10n.addTask),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  void _startEditing(int taskId, String currentTitle) {
+    setState(() {
+      _editingQuickTaskId = taskId;
+      _editController.text = currentTitle;
+    });
+  }
+
+  void _saveEdit(int taskId) {
+    final newTitle = _editController.text.trim();
+    if (newTitle.isEmpty) return;
+    final dateStr = DateHelpers.toDateString(_selectedDate);
+    final provider = context.read<QuickTaskProvider>();
+    final task = provider.tasks.firstWhere((t) => t.id == taskId);
+    provider.updateTask(task.copyWith(title: newTitle), dateStr);
+    setState(() => _editingQuickTaskId = null);
   }
 
   @override
@@ -152,10 +109,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       drawer: const AppDrawer(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddQuickTaskSheet,
-        child: const Icon(Icons.add),
-      ),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -174,7 +127,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
-                      DateHelpers.formatDateFull(_selectedDate, isArabic ? 'ar' : 'en'),
+                      DateHelpers.formatDateFull(
+                          _selectedDate, isArabic ? 'ar' : 'en'),
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
@@ -198,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: RefreshIndicator(
                 onRefresh: _loadData,
                 child: ListView(
-                  padding: const EdgeInsets.only(bottom: 80),
+                  padding: const EdgeInsets.only(bottom: 24),
                   children: [
                     // Daily tasks section
                     SectionHeader(
@@ -218,6 +172,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       icon: Icons.flash_on_rounded,
                     ),
                     _buildQuickTasks(l10n),
+                    _buildQuickTaskInput(l10n),
                   ],
                 ),
               ),
@@ -300,6 +255,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildQuickTasks(AppLocalizations l10n) {
     final dateStr = DateHelpers.toDateString(_selectedDate);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Consumer<QuickTaskProvider>(
       builder: (context, provider, _) {
         if (provider.tasks.isEmpty) {
@@ -307,30 +264,131 @@ class _HomeScreenState extends State<HomeScreen> {
         }
         return Column(
           children: provider.tasks.map((task) {
-            return Dismissible(
-              key: ValueKey(task.id),
-              direction: DismissDirection.endToStart,
-              background: Container(
-                alignment: Alignment.centerRight,
-                padding: const EdgeInsets.only(right: 24),
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.error,
-                  borderRadius: BorderRadius.circular(12),
+            final isEditing = _editingQuickTaskId == task.id;
+
+            return Card(
+              margin:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                child: Row(
+                  children: [
+                    // Checkbox
+                    Checkbox(
+                      value: task.isDone,
+                      onChanged: (_) => provider.toggleDone(
+                          task.id!, !task.isDone, dateStr),
+                    ),
+                    // Label or edit field
+                    Expanded(
+                      child: isEditing
+                          ? TextField(
+                              controller: _editController,
+                              autofocus: true,
+                              style: const TextStyle(fontSize: 15),
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                isDense: true,
+                                contentPadding:
+                                    EdgeInsets.symmetric(vertical: 8),
+                              ),
+                              onSubmitted: (_) => _saveEdit(task.id!),
+                            )
+                          : GestureDetector(
+                              onTap: () =>
+                                  _startEditing(task.id!, task.title),
+                              child: Text(
+                                task.title,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w400,
+                                  decoration: task.isDone
+                                      ? TextDecoration.lineThrough
+                                      : null,
+                                  color: task.isDone
+                                      ? (isDark
+                                          ? AppColors.darkTextSecondary
+                                          : AppColors.textSecondary)
+                                      : (isDark
+                                          ? AppColors.darkTextPrimary
+                                          : AppColors.textPrimary),
+                                ),
+                              ),
+                            ),
+                    ),
+                    // Delete button
+                    IconButton(
+                      icon: Icon(
+                        Icons.close_rounded,
+                        size: 18,
+                        color: isDark
+                            ? AppColors.darkTextSecondary
+                            : AppColors.textSecondary,
+                      ),
+                      onPressed: () =>
+                          provider.deleteTask(task.id!, dateStr),
+                    ),
+                  ],
                 ),
-                child: const Icon(Icons.delete_rounded, color: Colors.white),
-              ),
-              onDismissed: (_) => provider.deleteTask(task.id!, dateStr),
-              child: TaskCard(
-                title: task.title,
-                isDone: task.isDone,
-                onToggle: () =>
-                    provider.toggleDone(task.id!, !task.isDone, dateStr),
               ),
             );
           }).toList(),
         );
       },
+    );
+  }
+
+  /// Inline text field to add a new quick task.
+  Widget _buildQuickTaskInput(AppLocalizations l10n) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        child: Row(
+          children: [
+            const SizedBox(width: 12),
+            Icon(
+              Icons.add_rounded,
+              size: 20,
+              color: isDark
+                  ? AppColors.darkTextSecondary
+                  : AppColors.textSecondary,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: TextField(
+                controller: _quickTaskController,
+                style: const TextStyle(fontSize: 15),
+                decoration: InputDecoration(
+                  hintText: l10n.addQuickTask,
+                  hintStyle: TextStyle(
+                    color: isDark
+                        ? AppColors.darkTextSecondary
+                        : AppColors.textSecondary,
+                    fontSize: 14,
+                  ),
+                  border: InputBorder.none,
+                  isDense: true,
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 12),
+                ),
+                onSubmitted: (_) => _addQuickTask(),
+              ),
+            ),
+            IconButton(
+              icon: Icon(
+                Icons.send_rounded,
+                size: 18,
+                color: AppColors.primary,
+              ),
+              onPressed: _addQuickTask,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -342,7 +400,8 @@ class _HomeScreenState extends State<HomeScreen> {
         text,
         style: TextStyle(
           fontSize: 13,
-          color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+          color:
+              isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
           fontStyle: FontStyle.italic,
         ),
       ),

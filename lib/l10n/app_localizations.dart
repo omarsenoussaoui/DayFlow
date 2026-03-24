@@ -65,6 +65,28 @@ class AppLocalizations {
       'fri': 'Fri',
       'sat': 'Sat',
       'sun': 'Sun',
+      'counters': 'COUNTERS',
+      'manageCounters': 'Manage Counters',
+      'countersTitle': 'Counters',
+      'newCounter': 'New Counter',
+      'editCounter': 'Edit Counter',
+      'counterLabel': 'Counter label',
+      'addCounter': 'Add Counter',
+      'deleteCounter': 'Delete Counter',
+      'deleteCounterConfirm': 'Delete "{title}"? This cannot be undone.',
+      'noCounters': 'No counters for this day',
+      'noCountersYet': 'No counters yet',
+      'countersTrackPerDay': 'Counters track values per day',
+      'initialCount': 'Initial count',
+      'manageQuickTasks': 'Manage Quick Tasks',
+      'quickTasksTitle': 'Quick Tasks',
+      'newQuickTask': 'New Quick Task',
+      'editQuickTask': 'Edit Quick Task',
+      'quickTaskName': 'Task name',
+      'deleteQuickTask': 'Delete Quick Task',
+      'noQuickTasksYet': 'No quick tasks yet',
+      'quickTasksAppearOnDate': 'Quick tasks appear on their assigned date',
+      'selectDate': 'Select date',
     },
     'ar': {
       'appName': 'DayFlow',
@@ -116,6 +138,28 @@ class AppLocalizations {
       'fri': 'جمعة',
       'sat': 'سبت',
       'sun': 'أحد',
+      'counters': 'العدّادات',
+      'manageCounters': 'إدارة العدّادات',
+      'countersTitle': 'العدّادات',
+      'newCounter': 'عدّاد جديد',
+      'editCounter': 'تعديل العدّاد',
+      'counterLabel': 'اسم العدّاد',
+      'addCounter': 'إضافة عدّاد',
+      'deleteCounter': 'حذف العدّاد',
+      'deleteCounterConfirm': 'حذف "{title}"؟ لا يمكن التراجع عن هذا.',
+      'noCounters': 'لا توجد عدّادات لهذا اليوم',
+      'noCountersYet': 'لا توجد عدّادات بعد',
+      'countersTrackPerDay': 'العدّادات تتبع القيم لكل يوم',
+      'initialCount': 'القيمة الأولية',
+      'manageQuickTasks': 'إدارة المهام السريعة',
+      'quickTasksTitle': 'المهام السريعة',
+      'newQuickTask': 'مهمة سريعة جديدة',
+      'editQuickTask': 'تعديل المهمة السريعة',
+      'quickTaskName': 'اسم المهمة',
+      'deleteQuickTask': 'حذف المهمة السريعة',
+      'noQuickTasksYet': 'لا توجد مهام سريعة بعد',
+      'quickTasksAppearOnDate': 'المهام السريعة تظهر في تاريخها المحدد',
+      'selectDate': 'اختيار التاريخ',
     },
   };
 
@@ -188,6 +232,51 @@ class AppLocalizations {
   String get selectDays =>
       _localizedValues[locale.languageCode]!['selectDays']!;
   String get allDays => _localizedValues[locale.languageCode]!['allDays']!;
+  String get counters =>
+      _localizedValues[locale.languageCode]!['counters']!;
+  String get manageCounters =>
+      _localizedValues[locale.languageCode]!['manageCounters']!;
+  String get countersTitle =>
+      _localizedValues[locale.languageCode]!['countersTitle']!;
+  String get newCounter =>
+      _localizedValues[locale.languageCode]!['newCounter']!;
+  String get editCounter =>
+      _localizedValues[locale.languageCode]!['editCounter']!;
+  String get counterLabel =>
+      _localizedValues[locale.languageCode]!['counterLabel']!;
+  String get addCounter =>
+      _localizedValues[locale.languageCode]!['addCounter']!;
+  String get deleteCounter =>
+      _localizedValues[locale.languageCode]!['deleteCounter']!;
+  String deleteCounterConfirm(String title) =>
+      _localizedValues[locale.languageCode]!['deleteCounterConfirm']!
+          .replaceAll('{title}', title);
+  String get noCounters =>
+      _localizedValues[locale.languageCode]!['noCounters']!;
+  String get noCountersYet =>
+      _localizedValues[locale.languageCode]!['noCountersYet']!;
+  String get countersTrackPerDay =>
+      _localizedValues[locale.languageCode]!['countersTrackPerDay']!;
+  String get initialCount =>
+      _localizedValues[locale.languageCode]!['initialCount']!;
+  String get manageQuickTasks =>
+      _localizedValues[locale.languageCode]!['manageQuickTasks']!;
+  String get quickTasksTitle =>
+      _localizedValues[locale.languageCode]!['quickTasksTitle']!;
+  String get newQuickTask =>
+      _localizedValues[locale.languageCode]!['newQuickTask']!;
+  String get editQuickTask =>
+      _localizedValues[locale.languageCode]!['editQuickTask']!;
+  String get quickTaskName =>
+      _localizedValues[locale.languageCode]!['quickTaskName']!;
+  String get deleteQuickTask =>
+      _localizedValues[locale.languageCode]!['deleteQuickTask']!;
+  String get noQuickTasksYet =>
+      _localizedValues[locale.languageCode]!['noQuickTasksYet']!;
+  String get quickTasksAppearOnDate =>
+      _localizedValues[locale.languageCode]!['quickTasksAppearOnDate']!;
+  String get selectDate =>
+      _localizedValues[locale.languageCode]!['selectDate']!;
 
   /// Day names indexed by weekday number (1=Mon, 7=Sun).
   static const _dayKeysEn = {

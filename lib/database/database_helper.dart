@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import '../models/counter.dart';
 import '../models/daily_task.dart';
 import '../models/notification_task.dart';
 import '../models/quick_task.dart';
@@ -23,7 +24,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 4,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -70,6 +71,15 @@ class DatabaseHelper {
       )
     ''');
 
+    await db.execute('''
+      CREATE TABLE counters (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        label TEXT NOT NULL,
+        count INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL
+      )
+    ''');
+
     // Create indexes for common queries
     await db.execute(
       'CREATE INDEX idx_completions_task_date ON daily_task_completions(daily_task_id, date)',
@@ -87,6 +97,29 @@ class DatabaseHelper {
       await db.execute(
         "ALTER TABLE daily_tasks ADD COLUMN days TEXT NOT NULL DEFAULT '1,2,3,4,5,6,7'",
       );
+    }
+    if (oldVersion < 3) {
+      await db.execute('''
+        CREATE TABLE counters (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          label TEXT NOT NULL,
+          count INTEGER NOT NULL DEFAULT 0,
+          date TEXT NOT NULL DEFAULT '',
+          created_at TEXT NOT NULL
+        )
+      ''');
+    }
+    if (oldVersion < 4) {
+      // Recreate counters table without date column
+      await db.execute('DROP TABLE IF EXISTS counters');
+      await db.execute('''
+        CREATE TABLE counters (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          label TEXT NOT NULL,
+          count INTEGER NOT NULL DEFAULT 0,
+          created_at TEXT NOT NULL
+        )
+      ''');
     }
   }
 
@@ -218,6 +251,12 @@ class DatabaseHelper {
     return await db.insert('quick_tasks', task.toMap());
   }
 
+  Future<List<QuickTask>> getAllQuickTasks() async {
+    final db = await database;
+    final maps = await db.query('quick_tasks', orderBy: 'date ASC, created_at ASC');
+    return maps.map((map) => QuickTask.fromMap(map)).toList();
+  }
+
   Future<List<QuickTask>> getQuickTasksByDate(String date) async {
     final db = await database;
     final maps = await db.query(
@@ -252,5 +291,33 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  // --- Counters ---
+
+  Future<int> insertCounter(Counter counter) async {
+    final db = await database;
+    return await db.insert('counters', counter.toMap());
+  }
+
+  Future<List<Counter>> getAllCounters() async {
+    final db = await database;
+    final maps = await db.query('counters', orderBy: 'created_at ASC');
+    return maps.map((map) => Counter.fromMap(map)).toList();
+  }
+
+  Future<int> updateCounter(Counter counter) async {
+    final db = await database;
+    return await db.update(
+      'counters',
+      counter.toMap(),
+      where: 'id = ?',
+      whereArgs: [counter.id],
+    );
+  }
+
+  Future<int> deleteCounter(int id) async {
+    final db = await database;
+    return await db.delete('counters', where: 'id = ?', whereArgs: [id]);
   }
 }

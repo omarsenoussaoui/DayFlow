@@ -5,6 +5,7 @@ import '../providers/locale_provider.dart';
 import '../utils/constants.dart';
 import '../screens/manage_daily_tasks_screen.dart';
 import '../screens/manage_notification_tasks_screen.dart';
+import '../screens/manage_counters_screen.dart';
 import '../screens/about_screen.dart';
 
 class AppDrawer extends StatelessWidget {
@@ -84,6 +85,19 @@ class AppDrawer extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (_) => const ManageNotificationTasksScreen(),
+                  ),
+                );
+              },
+            ),
+            _DrawerItem(
+              icon: Icons.pin_rounded,
+              title: l10n.manageCounters,
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const ManageCountersScreen(),
                   ),
                 );
               },

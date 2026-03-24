@@ -6,8 +6,15 @@ class QuickTaskProvider extends ChangeNotifier {
   final DatabaseHelper _db = DatabaseHelper();
 
   List<QuickTask> _tasks = [];
+  List<QuickTask> _allTasks = [];
 
   List<QuickTask> get tasks => _tasks;
+  List<QuickTask> get allTasks => _allTasks;
+
+  Future<void> loadAllTasks() async {
+    _allTasks = await _db.getAllQuickTasks();
+    notifyListeners();
+  }
 
   Future<void> loadTasksForDate(String date) async {
     _tasks = await _db.getQuickTasksByDate(date);
@@ -17,6 +24,12 @@ class QuickTaskProvider extends ChangeNotifier {
   Future<void> addTask(String title, String date) async {
     final task = QuickTask(title: title, date: date);
     await _db.insertQuickTask(task);
+    await loadTasksForDate(date);
+  }
+
+  Future<void> updateTask(QuickTask task, String date) async {
+    await _db.updateQuickTask(task);
+    await loadAllTasks();
     await loadTasksForDate(date);
   }
 

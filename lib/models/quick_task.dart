@@ -33,11 +33,11 @@ class QuickTask {
     );
   }
 
-  QuickTask copyWith({int? id, String? title, bool? isDone}) {
+  QuickTask copyWith({int? id, String? title, String? date, bool? isDone}) {
     return QuickTask(
       id: id ?? this.id,
       title: title ?? this.title,
-      date: date,
+      date: date ?? this.date,
       isDone: isDone ?? this.isDone,
       createdAt: createdAt,
     );
