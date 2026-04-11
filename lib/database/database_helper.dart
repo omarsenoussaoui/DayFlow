@@ -2,6 +2,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/counter.dart';
 import '../models/daily_task.dart';
+import '../models/note.dart';
 import '../models/notification_task.dart';
 import '../models/quick_task.dart';
 
@@ -24,7 +25,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 4,
+      version: 5,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -80,6 +81,16 @@ class DatabaseHelper {
       )
     ''');
 
+    await db.execute('''
+      CREATE TABLE notes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        description TEXT NOT NULL DEFAULT '',
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )
+    ''');
+
     // Create indexes for common queries
     await db.execute(
       'CREATE INDEX idx_completions_task_date ON daily_task_completions(daily_task_id, date)',
@@ -118,6 +129,17 @@ class DatabaseHelper {
           label TEXT NOT NULL,
           count INTEGER NOT NULL DEFAULT 0,
           created_at TEXT NOT NULL
+        )
+      ''');
+    }
+    if (oldVersion < 5) {
+      await db.execute('''
+        CREATE TABLE notes (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          title TEXT NOT NULL,
+          description TEXT NOT NULL DEFAULT '',
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL
         )
       ''');
     }
@@ -319,5 +341,33 @@ class DatabaseHelper {
   Future<int> deleteCounter(int id) async {
     final db = await database;
     return await db.delete('counters', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // --- Notes ---
+
+  Future<int> insertNote(Note note) async {
+    final db = await database;
+    return await db.insert('notes', note.toMap());
+  }
+
+  Future<List<Note>> getAllNotes() async {
+    final db = await database;
+    final maps = await db.query('notes', orderBy: 'updated_at DESC');
+    return maps.map((map) => Note.fromMap(map)).toList();
+  }
+
+  Future<int> updateNote(Note note) async {
+    final db = await database;
+    return await db.update(
+      'notes',
+      note.toMap(),
+      where: 'id = ?',
+      whereArgs: [note.id],
+    );
+  }
+
+  Future<int> deleteNote(int id) async {
+    final db = await database;
+    return await db.delete('notes', where: 'id = ?', whereArgs: [id]);
   }
 }

@@ -87,6 +87,18 @@ class AppLocalizations {
       'noQuickTasksYet': 'No quick tasks yet',
       'quickTasksAppearOnDate': 'Quick tasks appear on their assigned date',
       'selectDate': 'Select date',
+      'notes': 'Notes',
+      'notesTitle': 'Notes',
+      'manageNotes': 'Notes',
+      'newNote': 'New Note',
+      'editNote': 'Edit Note',
+      'noteTitle': 'Title',
+      'noteDescription': 'Description',
+      'addNote': 'Add Note',
+      'deleteNote': 'Delete Note',
+      'deleteNoteConfirm': 'Delete "{title}"? This cannot be undone.',
+      'noNotesYet': 'No notes yet',
+      'notesHint': 'Save things you want to remember',
     },
     'ar': {
       'appName': 'DayFlow',
@@ -160,6 +172,18 @@ class AppLocalizations {
       'noQuickTasksYet': 'لا توجد مهام سريعة بعد',
       'quickTasksAppearOnDate': 'المهام السريعة تظهر في تاريخها المحدد',
       'selectDate': 'اختيار التاريخ',
+      'notes': 'الملاحظات',
+      'notesTitle': 'الملاحظات',
+      'manageNotes': 'الملاحظات',
+      'newNote': 'ملاحظة جديدة',
+      'editNote': 'تعديل الملاحظة',
+      'noteTitle': 'العنوان',
+      'noteDescription': 'الوصف',
+      'addNote': 'إضافة ملاحظة',
+      'deleteNote': 'حذف الملاحظة',
+      'deleteNoteConfirm': 'حذف "{title}"؟ لا يمكن التراجع عن هذا.',
+      'noNotesYet': 'لا توجد ملاحظات بعد',
+      'notesHint': 'احفظ الأشياء التي تريد تذكرها',
     },
   };
 
@@ -277,6 +301,27 @@ class AppLocalizations {
       _localizedValues[locale.languageCode]!['quickTasksAppearOnDate']!;
   String get selectDate =>
       _localizedValues[locale.languageCode]!['selectDate']!;
+  String get notes => _localizedValues[locale.languageCode]!['notes']!;
+  String get notesTitle =>
+      _localizedValues[locale.languageCode]!['notesTitle']!;
+  String get manageNotes =>
+      _localizedValues[locale.languageCode]!['manageNotes']!;
+  String get newNote => _localizedValues[locale.languageCode]!['newNote']!;
+  String get editNote => _localizedValues[locale.languageCode]!['editNote']!;
+  String get noteTitle =>
+      _localizedValues[locale.languageCode]!['noteTitle']!;
+  String get noteDescription =>
+      _localizedValues[locale.languageCode]!['noteDescription']!;
+  String get addNote => _localizedValues[locale.languageCode]!['addNote']!;
+  String get deleteNote =>
+      _localizedValues[locale.languageCode]!['deleteNote']!;
+  String deleteNoteConfirm(String title) =>
+      _localizedValues[locale.languageCode]!['deleteNoteConfirm']!
+          .replaceAll('{title}', title);
+  String get noNotesYet =>
+      _localizedValues[locale.languageCode]!['noNotesYet']!;
+  String get notesHint =>
+      _localizedValues[locale.languageCode]!['notesHint']!;
 
   /// Day names indexed by weekday number (1=Mon, 7=Sun).
   static const _dayKeysEn = {
