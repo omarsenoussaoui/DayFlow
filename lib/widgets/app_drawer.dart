@@ -7,6 +7,7 @@ import '../screens/manage_daily_tasks_screen.dart';
 import '../screens/manage_notification_tasks_screen.dart';
 import '../screens/manage_counters_screen.dart';
 import '../screens/notes_screen.dart';
+import '../screens/calories_screen.dart';
 import '../screens/about_screen.dart';
 
 class AppDrawer extends StatelessWidget {
@@ -112,6 +113,19 @@ class AppDrawer extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (_) => const NotesScreen(),
+                  ),
+                );
+              },
+            ),
+            _DrawerItem(
+              icon: Icons.local_fire_department_rounded,
+              title: l10n.calories,
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const CaloriesScreen(),
                   ),
                 );
               },

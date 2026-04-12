@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import '../models/calorie_entry.dart';
 import '../models/counter.dart';
 import '../models/daily_task.dart';
 import '../models/note.dart';
@@ -25,7 +26,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 5,
+      version: 7,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -91,7 +92,35 @@ class DatabaseHelper {
       )
     ''');
 
+    await db.execute('''
+      CREATE TABLE calorie_entries (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        calories INTEGER NOT NULL,
+        date TEXT NOT NULL,
+        created_at TEXT NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE calorie_goal (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        goal INTEGER NOT NULL DEFAULT 2000
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE daily_weight (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date TEXT NOT NULL UNIQUE,
+        weight REAL NOT NULL
+      )
+    ''');
+
     // Create indexes for common queries
+    await db.execute(
+      'CREATE INDEX idx_calorie_date ON calorie_entries(date)',
+    );
     await db.execute(
       'CREATE INDEX idx_completions_task_date ON daily_task_completions(daily_task_id, date)',
     );
@@ -140,6 +169,35 @@ class DatabaseHelper {
           description TEXT NOT NULL DEFAULT '',
           created_at TEXT NOT NULL,
           updated_at TEXT NOT NULL
+        )
+      ''');
+    }
+    if (oldVersion < 6) {
+      await db.execute('''
+        CREATE TABLE calorie_entries (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          calories INTEGER NOT NULL,
+          date TEXT NOT NULL,
+          created_at TEXT NOT NULL
+        )
+      ''');
+      await db.execute('''
+        CREATE TABLE calorie_goal (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          goal INTEGER NOT NULL DEFAULT 2000
+        )
+      ''');
+      await db.execute(
+        'CREATE INDEX idx_calorie_date ON calorie_entries(date)',
+      );
+    }
+    if (oldVersion < 7) {
+      await db.execute('''
+        CREATE TABLE daily_weight (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          date TEXT NOT NULL UNIQUE,
+          weight REAL NOT NULL
         )
       ''');
     }
@@ -369,5 +427,89 @@ class DatabaseHelper {
   Future<int> deleteNote(int id) async {
     final db = await database;
     return await db.delete('notes', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // --- Calorie Entries ---
+
+  Future<int> insertCalorieEntry(CalorieEntry entry) async {
+    final db = await database;
+    return await db.insert('calorie_entries', entry.toMap());
+  }
+
+  Future<List<CalorieEntry>> getCalorieEntriesByDate(String date) async {
+    final db = await database;
+    final maps = await db.query(
+      'calorie_entries',
+      where: 'date = ?',
+      whereArgs: [date],
+      orderBy: 'created_at ASC',
+    );
+    return maps.map((map) => CalorieEntry.fromMap(map)).toList();
+  }
+
+  Future<int> deleteCalorieEntry(int id) async {
+    final db = await database;
+    return await db.delete('calorie_entries', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // --- Calorie Goal ---
+
+  Future<int> getCalorieGoal() async {
+    final db = await database;
+    final maps = await db.query('calorie_goal', limit: 1);
+    if (maps.isEmpty) {
+      await db.insert('calorie_goal', {'goal': 2000});
+      return 2000;
+    }
+    return maps.first['goal'] as int;
+  }
+
+  Future<void> setCalorieGoal(int goal) async {
+    final db = await database;
+    final maps = await db.query('calorie_goal', limit: 1);
+    if (maps.isEmpty) {
+      await db.insert('calorie_goal', {'goal': goal});
+    } else {
+      await db.update(
+        'calorie_goal',
+        {'goal': goal},
+        where: 'id = ?',
+        whereArgs: [maps.first['id']],
+      );
+    }
+  }
+
+  // --- Daily Weight ---
+
+  Future<double?> getWeightForDate(String date) async {
+    final db = await database;
+    final maps = await db.query(
+      'daily_weight',
+      where: 'date = ?',
+      whereArgs: [date],
+      limit: 1,
+    );
+    if (maps.isEmpty) return null;
+    return maps.first['weight'] as double;
+  }
+
+  Future<void> setWeightForDate(String date, double weight) async {
+    final db = await database;
+    final maps = await db.query(
+      'daily_weight',
+      where: 'date = ?',
+      whereArgs: [date],
+      limit: 1,
+    );
+    if (maps.isEmpty) {
+      await db.insert('daily_weight', {'date': date, 'weight': weight});
+    } else {
+      await db.update(
+        'daily_weight',
+        {'weight': weight},
+        where: 'date = ?',
+        whereArgs: [date],
+      );
+    }
   }
 }

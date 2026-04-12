@@ -99,6 +99,30 @@ class AppLocalizations {
       'deleteNoteConfirm': 'Delete "{title}"? This cannot be undone.',
       'noNotesYet': 'No notes yet',
       'notesHint': 'Save things you want to remember',
+      'caloriesTitle': 'Calories',
+      'calories': 'Calories',
+      'setCalorieGoal': 'Set Daily Goal',
+      'calorieGoalHint': 'Daily calorie goal',
+      'cal': 'cal',
+      'addCalorieEntry': 'Add Food Entry',
+      'foodName': 'Food name',
+      'caloriesAmount': 'Calories',
+      'addEntry': 'Add Entry',
+      'dailyGoal': 'Daily Goal',
+      'totalEaten': 'Total Eaten',
+      'difference': 'Difference',
+      'overGoal': 'You exceeded your goal, need to burn more',
+      'underGoal': 'You still need more calories',
+      'exactGoal': 'You hit your goal exactly!',
+      'noCalorieEntries': 'No entries yet, tap + to add food',
+      'food': 'Food',
+      'sport': 'Sport',
+      'sportName': 'Activity name',
+      'netCalories': 'Net Calories',
+      'todayWeight': 'Today\'s Weight',
+      'weight': 'Weight',
+      'weightHint': 'Your weight',
+      'kg': 'kg',
     },
     'ar': {
       'appName': 'DayFlow',
@@ -184,6 +208,30 @@ class AppLocalizations {
       'deleteNoteConfirm': 'حذف "{title}"؟ لا يمكن التراجع عن هذا.',
       'noNotesYet': 'لا توجد ملاحظات بعد',
       'notesHint': 'احفظ الأشياء التي تريد تذكرها',
+      'caloriesTitle': 'السعرات الحرارية',
+      'calories': 'السعرات الحرارية',
+      'setCalorieGoal': 'تحديد الهدف اليومي',
+      'calorieGoalHint': 'هدف السعرات اليومي',
+      'cal': 'سعرة',
+      'addCalorieEntry': 'إضافة وجبة',
+      'foodName': 'اسم الطعام',
+      'caloriesAmount': 'السعرات',
+      'addEntry': 'إضافة',
+      'dailyGoal': 'الهدف اليومي',
+      'totalEaten': 'المجموع',
+      'difference': 'الفرق',
+      'overGoal': 'تجاوزت هدفك، تحتاج حرق المزيد',
+      'underGoal': 'تحتاج المزيد من السعرات',
+      'exactGoal': 'وصلت لهدفك بالضبط!',
+      'noCalorieEntries': 'لا توجد وجبات، اضغط + لإضافة طعام',
+      'food': 'طعام',
+      'sport': 'رياضة',
+      'sportName': 'اسم النشاط',
+      'netCalories': 'صافي السعرات',
+      'todayWeight': 'وزن اليوم',
+      'weight': 'الوزن',
+      'weightHint': 'وزنك',
+      'kg': 'كغ',
     },
   };
 
@@ -322,6 +370,49 @@ class AppLocalizations {
       _localizedValues[locale.languageCode]!['noNotesYet']!;
   String get notesHint =>
       _localizedValues[locale.languageCode]!['notesHint']!;
+  String get caloriesTitle =>
+      _localizedValues[locale.languageCode]!['caloriesTitle']!;
+  String get calories =>
+      _localizedValues[locale.languageCode]!['calories']!;
+  String get setCalorieGoal =>
+      _localizedValues[locale.languageCode]!['setCalorieGoal']!;
+  String get calorieGoalHint =>
+      _localizedValues[locale.languageCode]!['calorieGoalHint']!;
+  String get cal => _localizedValues[locale.languageCode]!['cal']!;
+  String get addCalorieEntry =>
+      _localizedValues[locale.languageCode]!['addCalorieEntry']!;
+  String get foodName =>
+      _localizedValues[locale.languageCode]!['foodName']!;
+  String get caloriesAmount =>
+      _localizedValues[locale.languageCode]!['caloriesAmount']!;
+  String get addEntry =>
+      _localizedValues[locale.languageCode]!['addEntry']!;
+  String get dailyGoal =>
+      _localizedValues[locale.languageCode]!['dailyGoal']!;
+  String get totalEaten =>
+      _localizedValues[locale.languageCode]!['totalEaten']!;
+  String get difference =>
+      _localizedValues[locale.languageCode]!['difference']!;
+  String get overGoal =>
+      _localizedValues[locale.languageCode]!['overGoal']!;
+  String get underGoal =>
+      _localizedValues[locale.languageCode]!['underGoal']!;
+  String get exactGoal =>
+      _localizedValues[locale.languageCode]!['exactGoal']!;
+  String get noCalorieEntries =>
+      _localizedValues[locale.languageCode]!['noCalorieEntries']!;
+  String get food => _localizedValues[locale.languageCode]!['food']!;
+  String get sport => _localizedValues[locale.languageCode]!['sport']!;
+  String get sportName =>
+      _localizedValues[locale.languageCode]!['sportName']!;
+  String get netCalories =>
+      _localizedValues[locale.languageCode]!['netCalories']!;
+  String get todayWeight =>
+      _localizedValues[locale.languageCode]!['todayWeight']!;
+  String get weight => _localizedValues[locale.languageCode]!['weight']!;
+  String get weightHint =>
+      _localizedValues[locale.languageCode]!['weightHint']!;
+  String get kg => _localizedValues[locale.languageCode]!['kg']!;
 
   /// Day names indexed by weekday number (1=Mon, 7=Sun).
   static const _dayKeysEn = {

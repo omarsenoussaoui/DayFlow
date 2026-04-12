@@ -5,6 +5,7 @@ import 'app.dart';
 import 'providers/daily_task_provider.dart';
 import 'providers/notification_task_provider.dart';
 import 'providers/locale_provider.dart';
+import 'providers/calorie_provider.dart';
 import 'providers/counter_provider.dart';
 import 'providers/note_provider.dart';
 import 'providers/quick_task_provider.dart';
@@ -29,6 +30,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => QuickTaskProvider()),
         ChangeNotifierProvider(create: (_) => CounterProvider()),
         ChangeNotifierProvider(create: (_) => NoteProvider()),
+        ChangeNotifierProvider(create: (_) => CalorieProvider()),
       ],
       child: const DayFlowApp(),
     ),
