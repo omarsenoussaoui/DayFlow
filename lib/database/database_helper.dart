@@ -26,7 +26,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 7,
+      version: 8,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -38,7 +38,8 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
         days TEXT NOT NULL DEFAULT '1,2,3,4,5,6,7',
-        created_at TEXT NOT NULL
+        created_at TEXT NOT NULL,
+        archived_at TEXT
       )
     ''');
 
@@ -201,6 +202,11 @@ class DatabaseHelper {
         )
       ''');
     }
+    if (oldVersion < 8) {
+      await db.execute(
+        'ALTER TABLE daily_tasks ADD COLUMN archived_at TEXT',
+      );
+    }
   }
 
   // --- Daily Tasks ---
@@ -210,6 +216,18 @@ class DatabaseHelper {
     return await db.insert('daily_tasks', task.toMap());
   }
 
+  /// Returns only active (non-archived) daily tasks — for the manage screen.
+  Future<List<DailyTask>> getActiveDailyTasks() async {
+    final db = await database;
+    final maps = await db.query(
+      'daily_tasks',
+      where: 'archived_at IS NULL',
+      orderBy: 'created_at ASC',
+    );
+    return maps.map((map) => DailyTask.fromMap(map)).toList();
+  }
+
+  /// Returns ALL daily tasks (active + archived) — for historical views.
   Future<List<DailyTask>> getAllDailyTasks() async {
     final db = await database;
     final maps = await db.query('daily_tasks', orderBy: 'created_at ASC');
@@ -226,12 +244,16 @@ class DatabaseHelper {
     );
   }
 
-  Future<int> deleteDailyTask(int id) async {
+  /// Soft-delete: archives the task so it stops appearing in the active list
+  /// but remains in history for past dates.
+  Future<int> archiveDailyTask(int id) async {
     final db = await database;
-    // Also delete completions
-    await db.delete('daily_task_completions',
-        where: 'daily_task_id = ?', whereArgs: [id]);
-    return await db.delete('daily_tasks', where: 'id = ?', whereArgs: [id]);
+    return await db.update(
+      'daily_tasks',
+      {'archived_at': DateTime.now().toIso8601String()},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   // --- Daily Task Completions ---

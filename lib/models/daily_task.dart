@@ -3,13 +3,17 @@ class DailyTask {
   final String title;
   final String days; // Comma-separated day numbers: "1,2,3" (1=Mon, 7=Sun)
   final String createdAt;
+  final String? archivedAt; // null = active, set = archived (soft-deleted)
 
   DailyTask({
     this.id,
     required this.title,
     required this.days,
     String? createdAt,
+    this.archivedAt,
   }) : createdAt = createdAt ?? DateTime.now().toIso8601String();
+
+  bool get isActive => archivedAt == null;
 
   Map<String, dynamic> toMap() {
     return {
@@ -17,6 +21,7 @@ class DailyTask {
       'title': title,
       'days': days,
       'created_at': createdAt,
+      'archived_at': archivedAt,
     };
   }
 
@@ -26,15 +31,17 @@ class DailyTask {
       title: map['title'] as String,
       days: (map['days'] as String?) ?? '1,2,3,4,5,6,7',
       createdAt: map['created_at'] as String,
+      archivedAt: map['archived_at'] as String?,
     );
   }
 
-  DailyTask copyWith({int? id, String? title, String? days}) {
+  DailyTask copyWith({int? id, String? title, String? days, String? archivedAt}) {
     return DailyTask(
       id: id ?? this.id,
       title: title ?? this.title,
       days: days ?? this.days,
       createdAt: createdAt,
+      archivedAt: archivedAt ?? this.archivedAt,
     );
   }
 
@@ -44,6 +51,25 @@ class DailyTask {
 
   /// Check if this task should appear on a given weekday (1=Mon, 7=Sun).
   bool isForWeekday(int weekday) => dayList.contains(weekday);
+
+  /// Check if this task was active on a given date.
+  bool wasActiveOn(DateTime date) {
+    final created = DateTime.parse(createdAt);
+    // Task must have been created on or before the date
+    if (DateTime(created.year, created.month, created.day)
+            .isAfter(DateTime(date.year, date.month, date.day))) {
+      return false;
+    }
+    // If archived, it must have been archived after the date
+    if (archivedAt != null) {
+      final archived = DateTime.parse(archivedAt!);
+      if (DateTime(archived.year, archived.month, archived.day)
+              .isBefore(DateTime(date.year, date.month, date.day))) {
+        return false;
+      }
+    }
+    return true;
+  }
 }
 
 class DailyTaskCompletion {

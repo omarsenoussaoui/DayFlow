@@ -6,18 +6,22 @@ import '../utils/date_helpers.dart';
 class DailyTaskProvider extends ChangeNotifier {
   final DatabaseHelper _db = DatabaseHelper();
 
-  List<DailyTask> _allTasks = [];
+  List<DailyTask> _activeTasks = [];   // Active only (for manage screen)
+  List<DailyTask> _allTasks = [];      // All including archived (for history)
   Map<int, bool> _completions = {};
   String _selectedDate = DateHelpers.toDateString(DateTime.now());
 
-  /// All daily tasks (for the manage screen).
-  List<DailyTask> get allTasks => _allTasks;
+  /// Active daily tasks only (for the manage screen).
+  List<DailyTask> get allTasks => _activeTasks;
 
-  /// Tasks filtered by the selected date's weekday (for the home screen).
+  /// Tasks for the selected day — filters by weekday AND checks if the task
+  /// was active on that date (handles archived tasks for historical view).
   List<DailyTask> get tasksForSelectedDay {
     final date = DateTime.parse(_selectedDate);
     final weekday = date.weekday; // 1=Mon, 7=Sun
-    return _allTasks.where((t) => t.isForWeekday(weekday)).toList();
+    return _allTasks
+        .where((t) => t.isForWeekday(weekday) && t.wasActiveOn(date))
+        .toList();
   }
 
   Map<int, bool> get completions => _completions;
@@ -25,6 +29,7 @@ class DailyTaskProvider extends ChangeNotifier {
   bool isTaskDone(int taskId) => _completions[taskId] ?? false;
 
   Future<void> loadTasks() async {
+    _activeTasks = await _db.getActiveDailyTasks();
     _allTasks = await _db.getAllDailyTasks();
     _completions = await _db.getDailyTaskCompletions(_selectedDate);
     notifyListeners();
@@ -48,7 +53,7 @@ class DailyTaskProvider extends ChangeNotifier {
   }
 
   Future<void> deleteTask(int id) async {
-    await _db.deleteDailyTask(id);
+    await _db.archiveDailyTask(id);
     await loadTasks();
   }
 
