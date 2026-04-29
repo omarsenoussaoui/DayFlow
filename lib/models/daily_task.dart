@@ -2,6 +2,7 @@ class DailyTask {
   final int? id;
   final String title;
   final String days; // Comma-separated day numbers: "1,2,3" (1=Mon, 7=Sun)
+  final int sortOrder;
   final String createdAt;
   final String? archivedAt; // null = active, set = archived (soft-deleted)
 
@@ -9,6 +10,7 @@ class DailyTask {
     this.id,
     required this.title,
     required this.days,
+    this.sortOrder = 0,
     String? createdAt,
     this.archivedAt,
   }) : createdAt = createdAt ?? DateTime.now().toIso8601String();
@@ -20,6 +22,7 @@ class DailyTask {
       if (id != null) 'id': id,
       'title': title,
       'days': days,
+      'sort_order': sortOrder,
       'created_at': createdAt,
       'archived_at': archivedAt,
     };
@@ -30,16 +33,18 @@ class DailyTask {
       id: map['id'] as int,
       title: map['title'] as String,
       days: (map['days'] as String?) ?? '1,2,3,4,5,6,7',
+      sortOrder: (map['sort_order'] as int?) ?? 0,
       createdAt: map['created_at'] as String,
       archivedAt: map['archived_at'] as String?,
     );
   }
 
-  DailyTask copyWith({int? id, String? title, String? days, String? archivedAt}) {
+  DailyTask copyWith({int? id, String? title, String? days, int? sortOrder, String? archivedAt}) {
     return DailyTask(
       id: id ?? this.id,
       title: title ?? this.title,
       days: days ?? this.days,
+      sortOrder: sortOrder ?? this.sortOrder,
       createdAt: createdAt,
       archivedAt: archivedAt ?? this.archivedAt,
     );

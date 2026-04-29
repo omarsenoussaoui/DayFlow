@@ -190,15 +190,31 @@ class _HomeScreenState extends State<HomeScreen> {
         if (tasks.isEmpty) {
           return _buildEmptyHint(l10n.noDailyTasks);
         }
-        return Column(
-          children: tasks.map((task) {
+        return ReorderableListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: tasks.length,
+          onReorder: (oldIndex, newIndex) {
+            provider.reorderTasksForDay(oldIndex, newIndex);
+          },
+          proxyDecorator: (child, index, animation) {
+            return Material(
+              elevation: 4,
+              borderRadius: BorderRadius.circular(12),
+              shadowColor: Colors.black.withValues(alpha: 0.2),
+              child: child,
+            );
+          },
+          itemBuilder: (context, index) {
+            final task = tasks[index];
             final isDone = provider.isTaskDone(task.id!);
             return TaskCard(
+              key: ValueKey(task.id),
               title: task.title,
               isDone: isDone,
               onToggle: () => provider.toggleCompletion(task.id!),
             );
-          }).toList(),
+          },
         );
       },
     );

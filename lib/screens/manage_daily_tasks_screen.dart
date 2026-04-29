@@ -240,13 +240,36 @@ class _ManageDailyTasksScreenState extends State<ManageDailyTasksScreen> {
             );
           }
 
-          return ListView.builder(
+          return ReorderableListView.builder(
             padding: const EdgeInsets.symmetric(vertical: 8),
             itemCount: provider.allTasks.length,
+            onReorder: (oldIndex, newIndex) {
+              provider.reorderTasks(oldIndex, newIndex);
+            },
+            proxyDecorator: (child, index, animation) {
+              return AnimatedBuilder(
+                animation: animation,
+                builder: (context, child) => Material(
+                  elevation: 4,
+                  borderRadius: BorderRadius.circular(12),
+                  shadowColor: Colors.black.withValues(alpha: 0.2),
+                  child: child,
+                ),
+                child: child,
+              );
+            },
             itemBuilder: (context, index) {
               final task = provider.allTasks[index];
               return Card(
+                key: ValueKey(task.id),
                 child: ListTile(
+                  leading: Icon(
+                    Icons.drag_handle_rounded,
+                    color: isDark
+                        ? AppColors.darkTextSecondary
+                        : AppColors.textSecondary,
+                    size: 20,
+                  ),
                   title: Text(
                     task.title,
                     style: const TextStyle(

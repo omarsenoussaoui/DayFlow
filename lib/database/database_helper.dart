@@ -26,7 +26,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 8,
+      version: 10,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -38,8 +38,17 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
         days TEXT NOT NULL DEFAULT '1,2,3,4,5,6,7',
+        sort_order INTEGER NOT NULL DEFAULT 0,
         created_at TEXT NOT NULL,
         archived_at TEXT
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE daily_task_day_order (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date TEXT NOT NULL UNIQUE,
+        task_ids TEXT NOT NULL
       )
     ''');
 
@@ -207,6 +216,20 @@ class DatabaseHelper {
         'ALTER TABLE daily_tasks ADD COLUMN archived_at TEXT',
       );
     }
+    if (oldVersion < 9) {
+      await db.execute(
+        'ALTER TABLE daily_tasks ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0',
+      );
+    }
+    if (oldVersion < 10) {
+      await db.execute('''
+        CREATE TABLE daily_task_day_order (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          date TEXT NOT NULL UNIQUE,
+          task_ids TEXT NOT NULL
+        )
+      ''');
+    }
   }
 
   // --- Daily Tasks ---
@@ -222,7 +245,7 @@ class DatabaseHelper {
     final maps = await db.query(
       'daily_tasks',
       where: 'archived_at IS NULL',
-      orderBy: 'created_at ASC',
+      orderBy: 'sort_order ASC, created_at ASC',
     );
     return maps.map((map) => DailyTask.fromMap(map)).toList();
   }
@@ -230,8 +253,23 @@ class DatabaseHelper {
   /// Returns ALL daily tasks (active + archived) — for historical views.
   Future<List<DailyTask>> getAllDailyTasks() async {
     final db = await database;
-    final maps = await db.query('daily_tasks', orderBy: 'created_at ASC');
+    final maps = await db.query('daily_tasks', orderBy: 'sort_order ASC, created_at ASC');
     return maps.map((map) => DailyTask.fromMap(map)).toList();
+  }
+
+  /// Update sort_order for a list of task IDs.
+  Future<void> reorderDailyTasks(List<int> orderedIds) async {
+    final db = await database;
+    final batch = db.batch();
+    for (int i = 0; i < orderedIds.length; i++) {
+      batch.update(
+        'daily_tasks',
+        {'sort_order': i},
+        where: 'id = ?',
+        whereArgs: [orderedIds[i]],
+      );
+    }
+    await batch.commit(noResult: true);
   }
 
   Future<int> updateDailyTask(DailyTask task) async {
@@ -254,6 +292,48 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  // --- Daily Task Day Order ---
+
+  /// Get the custom task order for a specific date. Returns null if no custom order.
+  Future<List<int>?> getDayTaskOrder(String date) async {
+    final db = await database;
+    final maps = await db.query(
+      'daily_task_day_order',
+      where: 'date = ?',
+      whereArgs: [date],
+      limit: 1,
+    );
+    if (maps.isEmpty) return null;
+    final idsStr = maps.first['task_ids'] as String;
+    if (idsStr.isEmpty) return null;
+    return idsStr.split(',').map((s) => int.parse(s.trim())).toList();
+  }
+
+  /// Save a custom task order for a specific date.
+  Future<void> setDayTaskOrder(String date, List<int> taskIds) async {
+    final db = await database;
+    final idsStr = taskIds.join(',');
+    final maps = await db.query(
+      'daily_task_day_order',
+      where: 'date = ?',
+      whereArgs: [date],
+      limit: 1,
+    );
+    if (maps.isEmpty) {
+      await db.insert('daily_task_day_order', {
+        'date': date,
+        'task_ids': idsStr,
+      });
+    } else {
+      await db.update(
+        'daily_task_day_order',
+        {'task_ids': idsStr},
+        where: 'date = ?',
+        whereArgs: [date],
+      );
+    }
   }
 
   // --- Daily Task Completions ---
